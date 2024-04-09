@@ -69,6 +69,12 @@ func postTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, ok := tasks[task.ID]
+	if ok {
+		http.Error(w, "Задача уже определена", http.StatusBadRequest)
+		return
+	}
+
 	tasks[task.ID] = task
 
 	w.Header().Set("Content-Type", "application/json")
@@ -97,23 +103,11 @@ func getTaskId(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteTaskId(w http.ResponseWriter, r *http.Request) {
-	var buf bytes.Buffer
 	id := chi.URLParam(r, "id")
 
 	task, ok := tasks[id]
 	if !ok {
 		http.Error(w, "Задача не найдена", http.StatusBadRequest)
-		return
-	}
-
-	_, err := buf.ReadFrom(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
